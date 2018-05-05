@@ -20,6 +20,11 @@ service: api # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs8.10
+  stage: dev
+  environment: ${file(env-${self:custom.stage}.yml)}
+custom:
+  stage: "${opt:stage, self:provider.stage}"
+
 
 # you can overwrite defaults here
 #  stage: dev
@@ -55,10 +60,18 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-    hello:
-      handler: handler.hello
+    posts:
+      handler: handler.posts
       events:
-      - http: GET hello
+      - http:
+        path: posts
+        method: get
+    postsCreate:
+      handler: handler.postsCreate
+      events:
+      - http:
+        path: posts
+        method: post
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

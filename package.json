@@ -1,0 +1,22 @@
+{
+  "name": "serverless",
+  "version": "1.0.0",
+  "description": "serverless",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WayneEllery/serverless.git"
+  },
+  "author": "Wayne Ellery",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WayneEllery/serverless/issues"
+  },
+  "homepage": "https://github.com/WayneEllery/serverless#readme",
+  "dependencies": {
+    "await-to-js": "^2.0.1",
+    "mongoose": "^5.0.17"
+  }
+}
