@@ -2,8 +2,11 @@
 const mongoose = require('mongoose');
 const to = require('await-to-js').default;
 const PostModel = require('./model/Post');
+let db;
 
 function handleError(err, callback) {
+  console.error(err);
+
   const response = {
     statusCode: 501,
     body: 'An error has occurred',
@@ -12,51 +15,63 @@ function handleError(err, callback) {
   callback(null, response);
 }
 
-function connectToDb() {
-  mongoose.connect(process.env.MONGO_DB_CONNECTION_STRING);
-  return mongoose.connection;
-}
+const connectToDb = async () => mongoose.connect(process.env.MONGO_DB_CONNECTION_STRING);
 
-module.exports.posts = (event, context, callback) => {
-  const db = connectToDb();
+module.exports.posts = async (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
 
-  db.once('open', async () => {
-    const [ err, posts ] = await to(PostModel.find());
-    db.close();
+  if (!db) {
+    const [ connErr ] = await to(connectToDb());
 
-    if (err) {
-      handleError(err, callback);
+    if (connErr) {
+      handleError(connErr, callback);
       return;
     }
 
-    const response = {
-      statusCode: 200,
-      body: JSON.stringify(posts),
-    };
+    db = mongoose.connection;
+  }
 
-    callback(null, response);
-  });
+  const [ err, posts ] = await to(PostModel.find());
+
+  if (err) {
+    handleError(err, callback);
+    return;
+  }
+
+  const response = {
+    statusCode: 200,
+    body: JSON.stringify(posts),
+  };
+
+  callback(null, response);
 };
 
-module.exports.postsCreate = (event, context, callback) => {
-  const db = connectToDb();
+module.exports.postsCreate = async (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
 
-  db.once('open', async () => {
-    const post = new PostModel(JSON.parse(event.body));
-    console.log(event.body);
-    const [ err ] = await to(post.save());
-    db.close();
+  if (!db) {
+    const [ connErr ] = await to(connectToDb());
 
-    if (err) {
-      handleError(callback);
+    if (connErr) {
+      handleError(connErr, callback);
       return;
     }
 
-    const response = {
-      statusCode: 200,
-      body: JSON.stringify(post),
-    };
+    db = mongoose.connection;
+  }
 
-    callback(null, response);
-  });
+  const post = new PostModel(JSON.parse(event.body));
+  const [ err ] = await to(post.save());
+
+  if (err) {
+    handleError(callback);
+    return;
+  }
+
+  const response = {
+    statusCode: 200,
+    body: JSON.stringify(post),
+  };
+
+  callback(null, response);
 };
