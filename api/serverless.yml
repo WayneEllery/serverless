@@ -25,6 +25,10 @@ provider:
 custom:
   stage: "${opt:stage, self:provider.stage}"
 
+package:
+    include:
+      - ../node_modules/**
+
 
 # you can overwrite defaults here
 #  stage: dev
@@ -63,15 +67,15 @@ functions:
     posts:
       handler: handler.posts
       events:
-      - http:
-        path: posts
-        method: get
+        - http:
+            path: posts
+            method: get
     postsCreate:
       handler: handler.postsCreate
       events:
-      - http:
-        path: posts
-        method: post
+        - http:
+            path: posts
+            method: post
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
